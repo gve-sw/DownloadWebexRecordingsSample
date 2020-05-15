@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+        <ns1:getNBRStorageFile soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="NBRStorageService">
+            <siteID>?</siteID >
+            <confId>?</confId>
+            <ticket>?</ticket>
+            <fileType>?</fileType>
+        <fromDate xsi:nil="true">?</fromDate>
+        <toDate xsi:nil="true">?</toDate>
+        </ns1:getNBRStorageFile>
+    </soapenv:Body>
+</soapenv:Envelope>

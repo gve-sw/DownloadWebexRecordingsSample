@@ -1,0 +1,11 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wbx="http://wbxservice.nbr.webservice.webex.com">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns1:getMeetingTicket soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="nbrXmlService">
+         <siteId xsi:type="xsd:long">?</siteId>
+         <username xsi:type="xsd:string">?</username>
+         <password xsi:type="xsd:string">?</password>
+         <service xsi:type="xsd:string">?</service>
+      </ns1:getMeetingTicket>
+   </soapenv:Body>
+</soapenv:Envelope>

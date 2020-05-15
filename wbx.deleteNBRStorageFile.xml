@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:wbx="http://wbxservice.nbr.webservice.webex.com">
+   <soapenv:Body>
+      <ns1:deleteNBRStorageFile soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:ns1="NBRStorageService">
+         <siteId xsi:type="xsd:long">?</siteId>
+         <confId xsi:type="xsd:long">?</confId>
+         <recordId xsi:type="xsd:long">?</recordId>
+         <ticket xsi:type="xsd:string">?</ticket>
+      </ns1:deleteNBRStorageFile>
+   </soapenv:Body>
+</soapenv:Envelope>

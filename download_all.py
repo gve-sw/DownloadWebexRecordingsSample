@@ -54,6 +54,7 @@ if __name__ == "__main__":
     while True:
 
         # Get first available recording (not PROCESSING or COMPLETED)
+        #cursor.execute('''SELECT name, status FROM recordings WHERE status IS NULL OR status = ?''', ('INVALID'))
         cursor.execute('''SELECT name, status FROM recordings WHERE status IS NULL''')
         record = cursor.fetchone()
         try:
