@@ -1,3 +1,8 @@
+
+## Contacts
+* Gerardo Chaves (gchaves@cisco.com)
+
+
 # Webex recordings download sample
 
 This sample code uses the Webex NBR XML/SOAP API: https://developer.cisco.com/docs/webex-meetings/#!nbr-web-services-api/overview
@@ -50,6 +55,9 @@ The code sample is divided into 4 python scripts that can be run independently:
 - **delete_all.py** Script that looks for entries in the "recordings" table in the database that are marked "COMPLETED" and checks that the file that was downloaded and specified in the meetingname field is still in existence. If the file is missing, it marks the status field in the recordings table as NULL so that it is downloaded the next time that **download_all.py** runs. 
  If a record in the DB that has status COMPLETED is already missing from the cloud, the status field is changed to MANUALDELETED. Otherwise, the script deletes it from the cloud and the status field is set to SCRIPTDELETED
  This script supports the ```-i```  argument to make it "interactive" and prompt before performing any deletions on the cloud or changes of status in the DB. 
+ It also prompts you for each recording it is about to delete or entry in the DB it will mark and allows you to skip specific recordings
+- **list_recordings.py** This script is used to report on all recordings in the cloud or already downloaded. It checks and reports on any missing recording files and 
+show the status for each as stored in the database. The output is a tab-delimited table with the following fields: ```RecordingID	LocalDBStatus	DownloadedPath	RecFileStatus	ModeratorName	MeetingName	StartTimeUTC	EndTimeUTC	ModeratorEmail	ModeratorLoginName	ModeratorJoinUTC	ModeratorLeaveUTC	```
 
 The usual sequence is to run **create_db.py** upon installation or re-initialization of the code:
 
@@ -77,6 +85,10 @@ just manually set the status field in the database for that recording to "SKIP" 
 download or delete the recording from the cloud. You do need to run **seed_db.py** to be able to create the entried in the table 
 if they were not there already and if you mark it as "SKIP" before running **download_all.py** it will never download it.
 
+At any point you can run **list_recordings.py** to get a listing of all recordings on your site and their download status in the database, but you must at least have initiated the 
+database with **create_db.py** to be able to run it:
+
+```python list_recordings.py```
 
 You might want to run the above sequence on weekly basis to give ample time for recordings to be verified before erasing them. 
 Only recordings that the **download_all.py** has downloaded before will deleted and only if the recording file is still present,
@@ -85,3 +97,23 @@ considered for deletion.
 
 To automate the running of the scripts using the example timeframes described above and after ample testing,
 we recommend you create a daily CRON job for running **seed_db.py** and **download_all.py** in sequence and also a separate weekly CRON job to run **delete_all.py** (without the -i option so it does not stop and ask for confirmation while running unattended)
+
+
+
+# Screenshots
+
+### LICENSE
+
+Provided under Cisco Sample Code License, for details see [LICENSE](LICENSE.md)
+
+### CODE_OF_CONDUCT
+
+Our code of conduct is available [here](CODE_OF_CONDUCT.md)
+
+### CONTRIBUTING
+
+See our contributing guidelines [here](CONTRIBUTING.md)
+
+#### DISCLAIMER:
+<b>Please note:</b> This script is meant for demo purposes only. All tools/ scripts in this repo are released for use "AS IS" without any warranties of any kind, including, but not limited to their installation, use, or performance. Any use of these scripts and tools is at your own risk. There is no guarantee that they have been through thorough testing in a comparable environment and we are not responsible for any damage or data loss incurred with their use.
+You are responsible for reviewing and testing any scripts you run thoroughly before use in any non-testing environment.

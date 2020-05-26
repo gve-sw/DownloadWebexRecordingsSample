@@ -157,6 +157,9 @@ if __name__ == "__main__":
     for theRecID, theRecPath in missingRecordingFilesPaths.items():
         # first mark records with missing files by setting status as NULL so it is downloaded again
         print(f"Recording file {theRecPath} for key {theRecID} not found!! Marking it as NULL in database so it is downloaded on the next run of the download script.")
+        if len(sys.argv[1:]) > 0:
+            if sys.argv[1:][0] == '-i':
+                if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
         cursor.execute('''UPDATE recordings SET status = ? WHERE name = ? ''',(None, theRecID))
         db.commit()
 
@@ -165,6 +168,9 @@ if __name__ == "__main__":
     for theRecID, theRecPath in toDeleteRecordingsPaths.items():
         if theRecID in recordingConfIDs:
             print(f"About to delete recording ID: {theRecID} with conf ID: {recordingConfIDs[theRecID]}")
+            if len(sys.argv[1:]) > 0:
+                if sys.argv[1:][0] == '-i':
+                    if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
 
             # Build XML for request
             etdeleteNBRStorageFile[0][0][0].text = siteID
@@ -186,6 +192,9 @@ if __name__ == "__main__":
             db.commit()
         else:
             print(f"Recording with key {theRecID} not found in cloud!! Marking it as MANUALDELETED in database")
+            if len(sys.argv[1:]) > 0:
+                if sys.argv[1:][0] == '-i':
+                    if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
             cursor.execute('''UPDATE recordings SET status = ? WHERE name = ? ''',
             ('MANUALDELETED', theRecID))
             db.commit()
