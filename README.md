@@ -1,4 +1,3 @@
-
 ## Contacts
 * Gerardo Chaves (gchaves@cisco.com)
 
@@ -48,14 +47,24 @@ output_path = Path to local or network shared folder where the recordings that a
 The code sample is divided into 4 python scripts that can be run independently:
 
 - **create_db.py** Creates the the SQL Lite dabatase in a local file named "recordings.sqlite" and adds an empty "recordings" table
+
 - **seed_db.py** Makes NBR API calls into the Webex cloud to extract the id of all the recordings it can find in the site and populates the "recordings" table in the database so the main application knows what to download
+
 - **download_one.py** Downloads just one recording specified in the "recordID" variable within the script. This is just a testing script to make sure your environment is setup correctly and it can download and store to the output folder
+
 - **download_all.py** Main script that looks for entries in the "recordings" table in the database and for any that do not have "COMPLETED" in the status field it will download to the output folder and update the status in the table. It will also update the meetingname field with the path to the downloaded recordings in mp4 format
+
 - **delete_one.py** Deletes just one recording from the Webex cloud specified in the "delRecordID" variable within the script. This is just a testing script to make sure your environment is setup correctly and it can delete recordings
+
 - **delete_all.py** Script that looks for entries in the "recordings" table in the database that are marked "COMPLETED" and checks that the file that was downloaded and specified in the meetingname field is still in existence. If the file is missing, it marks the status field in the recordings table as NULL so that it is downloaded the next time that **download_all.py** runs. 
  If a record in the DB that has status COMPLETED is already missing from the cloud, the status field is changed to MANUALDELETED. Otherwise, the script deletes it from the cloud and the status field is set to SCRIPTDELETED
- This script supports the ```-i```  argument to make it "interactive" and prompt before performing any deletions on the cloud or changes of status in the DB. 
- It also prompts you for each recording it is about to delete or entry in the DB it will mark and allows you to skip specific recordings
+ This script supports the following arguments:
+ ```-i```  makes it "interactive" and prompts before performing any deletions on the cloud or changes of status in the DB. 
+ It also prompts you for each recording it is about to delete or entry in the DB it will mark and allows you to skip specific recordings.
+ The ```-f``` argument allows you specify a "From" date in the YYYY-MM-DD format to only consider deleting recordings from the cloud from a specific date as reflected on the already download recording file.
+ The ```-t``` argument allows you specify a "To" date in the YYYY-MM-DD format to only consider deleting recordings from the cloud up to a specific date as reflected on the already download recording file. You can combine any of the parameters. You can also use ```-h``` for a short description of the parameters supported by the script. 
+ 
+ 
 - **list_recordings.py** This script is used to report on all recordings in the cloud or already downloaded. It checks and reports on any missing recording files and 
 show the status for each as stored in the database. The output is a tab-delimited table with the following fields: ```RecordingID	LocalDBStatus	DownloadedPath	RecFileStatus	ModeratorName	MeetingName	StartTimeUTC	EndTimeUTC	ModeratorEmail	ModeratorLoginName	ModeratorJoinUTC	ModeratorLeaveUTC	```
 
@@ -72,7 +81,7 @@ Right after **seed_db.py** completes, you run **download_all.py** to download th
 ```python download_all.py```
 
 When you have verified that you have all the recordings you need downloaded to the destination folder,
-you can run **delete_all.py** to remove them from the cloud. Use the ```-i``` option the first times you run it to validate what it is about to do: 
+you can run **delete_all.py** to remove them from the cloud. Use the ```-i``` option the first times you run it to validate what it is about to do and the ```-f``` and/or ```-t``` arguments if you want to constrain the date range of the recordings it deletes: 
 
 ```python delete_all.py -i```
 

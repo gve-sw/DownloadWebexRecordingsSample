@@ -49,9 +49,9 @@ if __name__ == "__main__":
     etLstRecording[0][0][1].text = userID
     etLstRecording[0][0][2].text = userPW
     rLstRecording = requests.post(vaNBRsvc, data=etree.tostring(etLstRecording), headers=stSOAPheaders)
-    print("rLstRecording= ", rLstRecording)
+    #print("rLstRecording= ", rLstRecording)
     docLstRecording = etree.fromstring(rLstRecording.text.encode('utf-8'), parser=parser)
-    print("docLstRecording= ", docLstRecording)
+    #print("docLstRecording= ", docLstRecording)
 
     for tag in docLstRecording.iter():
         if not len(tag) and tag.text is not None:

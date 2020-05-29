@@ -19,6 +19,8 @@ import os
 import sqlite3
 import requests
 from lxml import etree
+import argparse
+import datetime
 
 db = sqlite3.connect('recordings.sqlite')
 cursor = db.cursor()
@@ -48,12 +50,56 @@ recordingConfIDs={}
 toDeleteRecordingsPaths={}
 missingRecordingFilesPaths={}
 
+
 stXMLheaders = {'Content-Type': 'text/xml'}
 stSOAPheaders = {'Content-Type': 'text/xml', 'SOAPAction': ""}
 
 parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
+def isRecFileInRange(theFilename,fromDate,toDate):
+    #extract date from the filename
+    filename_without_time_and_extension = theFilename[:theFilename.rfind('_')]
+    just_the_date = filename_without_time_and_extension[-8:]
+
+    strFromDate=''
+    strToDate=''
+    #initialize return variable to true in case there is no date range defined
+    boolDateInRange = True
+
+    #set up which arguments where used
+    if fromDate != None:
+        strFromDate = fromDate.strftime('%Y%m%d')
+    if toDate != None:
+        strToDate = toDate.strftime('%Y%m%d')
+    #determine if date is in the range
+    if strFromDate != '' and strToDate != '':
+        boolDateInRange=just_the_date>=strFromDate and just_the_date<=strToDate
+    elif strFromDate != '':
+        boolDateInRange=just_the_date >= strFromDate
+    elif strToDate != '':
+        boolDateInRange = just_the_date<=strToDate
+
+    return boolDateInRange
+
+
 if __name__ == "__main__":
+
+    #evaluate and store script arguments
+    argsparser = argparse.ArgumentParser()
+    argsparser.add_argument('-i', '--interactive', action='store_true', help="Make the script interactive")
+    argsparser.add_argument('-f', "--fromdate",
+                            help="The From Date - format YYYY-MM-DD",
+                            required=False,
+                            type=datetime.date.fromisoformat)
+    argsparser.add_argument('-t', "--todate",
+                            help="The To Date format YYYY-MM-DD (Inclusive)",
+                            required=False,
+                            type=datetime.date.fromisoformat)
+    args = argsparser.parse_args()
+
+    runInteractive = args.interactive
+    fromDate = args.fromdate
+    toDate = args.todate
 
     # Get Meeting session Ticket
     etMeetingTicket[1][0][0].text = siteID
@@ -78,7 +124,7 @@ if __name__ == "__main__":
             confIDList.append(tag.text)
 
 
-    print("ConfID List = ",confIDList)
+    #print("ConfID List = ",confIDList)
 
 
     # - for each conference ID, call GetNBRStorageFile and request all recording IDs. Create a Dict in memory indexed by
@@ -100,7 +146,9 @@ if __name__ == "__main__":
         etGetNBRStorageFile[0][0][0].text = siteID
         etGetNBRStorageFile[0][0][1].text = confID
         etGetNBRStorageFile[0][0][2].text = sessionSSAT
+        #leave file type empty
         etGetNBRStorageFile[0][0][3].text = ''
+        #leave from and to dates empty, we check range based on recording filename
         etGetNBRStorageFile[0][0][4].text = ''
         etGetNBRStorageFile[0][0][5].text = ''
 
@@ -118,7 +166,7 @@ if __name__ == "__main__":
                 # and create Dict entries as such recordingConfIDs[RecordId]=confID
                 recordingConfIDs[recordingID] = confID
 
-    print("recordingConfIDs = ",recordingConfIDs)
+    #print("recordingConfIDs = ",recordingConfIDs)
 
     cursor.execute("SELECT name, meetingname, status FROM recordings WHERE status = ?", ('COMPLETED',))
     while True:
@@ -132,14 +180,16 @@ if __name__ == "__main__":
             theRecordPath=record[1]
 
             if os.path.isfile(theRecordPath):
-                #add to our dict to delete
-                toDeleteRecordingsPaths[theRecordID]=theRecordPath
+                #add to our dict to delete if in range or script parameters to consider for deletion
+                if isRecFileInRange(theRecordPath,fromDate,toDate):
+                    toDeleteRecordingsPaths[theRecordID]=theRecordPath
             else:
-                #add to our dict to mark as missing file
-                missingRecordingFilesPaths[theRecordID]=theRecordPath
+                #add to our dict to mark as missing file if in range or script parameters to consider for deletion
+                if isRecFileInRange(theRecordPath, fromDate, toDate):
+                    missingRecordingFilesPaths[theRecordID]=theRecordPath
 
         except TypeError:
-            print("No records found for deletion")
+            print("Done finding records for deletion")
             break
 
     print("About to mark the following recordings as missing for re-download:")
@@ -148,17 +198,16 @@ if __name__ == "__main__":
     print('')
     print("and about to delete the following recordings:")
     for theRecID, theRecPath in toDeleteRecordingsPaths.items():
-        print(f"ID: {theRecID} Path: {theRecPath}")
+        if theRecID in recordingConfIDs:
+            print(f"ID: {theRecID} Path: {theRecPath}")
 
-    if len(sys.argv[1:])>0:
-        if sys.argv[1:][0]=='-i':
-            if not input("Procced? (y/n): ").lower().strip()[:1] == "y": sys.exit(1)
+    if runInteractive:
+            if not input("Procced (you will get a chance to validate each marking and deletion)? (y/n): ").lower().strip()[:1] == "y": sys.exit(1)
 
     for theRecID, theRecPath in missingRecordingFilesPaths.items():
         # first mark records with missing files by setting status as NULL so it is downloaded again
         print(f"Recording file {theRecPath} for key {theRecID} not found!! Marking it as NULL in database so it is downloaded on the next run of the download script.")
-        if len(sys.argv[1:]) > 0:
-            if sys.argv[1:][0] == '-i':
+        if runInteractive:
                 if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
         cursor.execute('''UPDATE recordings SET status = ? WHERE name = ? ''',(None, theRecID))
         db.commit()
@@ -168,8 +217,7 @@ if __name__ == "__main__":
     for theRecID, theRecPath in toDeleteRecordingsPaths.items():
         if theRecID in recordingConfIDs:
             print(f"About to delete recording ID: {theRecID} with conf ID: {recordingConfIDs[theRecID]}")
-            if len(sys.argv[1:]) > 0:
-                if sys.argv[1:][0] == '-i':
+            if runInteractive:
                     if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
 
             # Build XML for request
@@ -192,8 +240,7 @@ if __name__ == "__main__":
             db.commit()
         else:
             print(f"Recording with key {theRecID} not found in cloud!! Marking it as MANUALDELETED in database")
-            if len(sys.argv[1:]) > 0:
-                if sys.argv[1:][0] == '-i':
+            if runInteractive:
                     if not input("Procced (y) or skip (n)?: ").lower().strip()[:1] == "y": continue
             cursor.execute('''UPDATE recordings SET status = ? WHERE name = ? ''',
             ('MANUALDELETED', theRecID))
