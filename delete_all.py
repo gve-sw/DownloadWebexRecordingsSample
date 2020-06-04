@@ -90,11 +90,11 @@ if __name__ == "__main__":
     argsparser.add_argument('-f', "--fromdate",
                             help="The From Date - format YYYY-MM-DD",
                             required=False,
-                            type=datetime.date.fromisoformat)
+                            type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d'))
     argsparser.add_argument('-t', "--todate",
                             help="The To Date format YYYY-MM-DD (Inclusive)",
                             required=False,
-                            type=datetime.date.fromisoformat)
+                            type=lambda s: datetime.datetime.strptime(s, '%Y-%m-%d'))
     args = argsparser.parse_args()
 
     runInteractive = args.interactive
